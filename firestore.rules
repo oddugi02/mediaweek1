@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: assignments
+    // Fields:
+    //   - title: string (required)
+    //   - description: string
+    //   - steps: list (required)
+    //   - direction: string
+    //   - references: list
+    //   - createdAt: number (required)
+    //   - userId: string (required)
+    //
+    // Collection: users
+    // Fields:
+    //   - name: string
+    //   - department: string
+    //   - timetable: list
+    //   - userId: string (required)
+    //
+    // Collection: professor_insights
+    // Fields:
+    //   - professorName: string
+    //   - style: string (required)
+    //   - points: list
+    //   - strategy: string (required)
+    //   - folderId: string
+    //   - createdAt: number (required)
+    //   - userId: string (required)
+    //
+    // Collection: insight_folders
+    // Fields:
+    //   - name: string (required)
+    //   - createdAt: number (required)
+    //   - userId: string (required)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function isValidAssignment(data) {
+      return data.keys().hasAll(['title', 'steps', 'userId', 'createdAt']) &&
+             data.title is string && data.title.size() < 200 &&
+             data.steps is list && data.steps.size() < 20 &&
+             data.userId == request.auth.uid;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['userId']) &&
+             data.userId == request.auth.uid &&
+             (!('name' in data) || (data.name is string && data.name.size() < 100)) &&
+             (!('department' in data) || (data.department is string && data.department.size() < 100)) &&
+             (!('timetable' in data) || (data.timetable is list && data.timetable.size() < 50));
+    }
+
+    function isValidProfessorInsight(data) {
+      return data.keys().hasAll(['style', 'strategy', 'userId', 'createdAt']) &&
+             data.style is string && data.style.size() < 2000 &&
+             data.strategy is string && data.strategy.size() < 3000 &&
+             data.userId == request.auth.uid &&
+             (!('professorName' in data) || (data.professorName is string && data.professorName.size() < 100)) &&
+             (!('folderId' in data) || (data.folderId is string)) &&
+             (!('redFlags' in data) || (data.redFlags is list)) &&
+             (!('preferredStyles' in data) || (data.preferredStyles is list));
+    }
+
+    function isValidInsightFolder(data) {
+      return data.keys().hasAll(['name', 'userId', 'createdAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.userId == request.auth.uid;
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && isValidAssignment(request.resource.data);
+      allow update: if isDocOwner() && isValidAssignment(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && request.auth.uid == userId;
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+      allow delete: if isOwner(userId);
+    }
+
+    match /professor_insights/{insightId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && isValidProfessorInsight(request.resource.data);
+      allow update: if isDocOwner() && isValidProfessorInsight(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    match /insight_folders/{folderId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && isValidInsightFolder(request.resource.data);
+      allow update: if isDocOwner() && isValidInsightFolder(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "Assignment": {
+      "title": "Assignment",
+      "description": "A project or assignment for a design student",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the assignment" },
+        "description": { "type": "string", "description": "Original description of the assignment" },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "text": { "type": "string" },
+              "completed": { "type": "boolean" }
+            }
+          }
+        },
+        "direction": { "type": "string", "description": "Strategic direction for the assignment" },
+        "references": { "type": "array", "items": { "type": "string" } },
+        "cheerMessage": { "type": "string", "description": "Encouraging message for the student" },
+        "createdAt": { "type": "number" },
+        "userId": { "type": "string", "description": "Owner of the assignment" }
+      },
+      "required": ["title", "steps", "userId", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile and timetable information",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "department": { "type": "string" },
+        "timetable": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "day": { "type": "string" },
+              "subject": { "type": "string" },
+              "startTime": { "type": "string" },
+              "endTime": { "type": "string" }
+            }
+          }
+        },
+        "userId": { "type": "string" }
+      },
+      "required": ["userId"]
+    },
+    "ProfessorInsight": {
+      "title": "ProfessorInsight",
+      "description": "Analysis of a professor's style and strategy",
+      "type": "object",
+      "properties": {
+        "professorName": { "type": "string" },
+        "style": { "type": "string" },
+        "points": { "type": "array", "items": { "type": "string" } },
+        "strategy": { "type": "string" },
+        "redFlags": { "type": "array", "items": { "type": "string" }, "description": "Things to avoid with this professor" },
+        "preferredStyles": { "type": "array", "items": { "type": "string" }, "description": "Visual styles preferred by the professor" },
+        "folderId": { "type": "string", "description": "ID of the folder this insight belongs to" },
+        "createdAt": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["style", "strategy", "userId", "createdAt"]
+    },
+    "InsightFolder": {
+      "title": "InsightFolder",
+      "description": "A folder to organize professor insights",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["name", "userId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/assignments/{assignmentId}": {
+      "schema": "Assignment",
+      "description": "Collection of student assignments"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles and timetables"
+    },
+    "/professor_insights/{insightId}": {
+      "schema": "ProfessorInsight",
+      "description": "Analysis of professor styles"
+    },
+    "/insight_folders/{folderId}": {
+      "schema": "InsightFolder",
+      "description": "Folders for organizing insights"
+    }
+  }
+}

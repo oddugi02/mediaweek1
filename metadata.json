@@ -1,0 +1,7 @@
+{
+  "name": "Studio Pilot (스튜디오 파일럿)",
+  "description": "시각디자인학과 학생들을 위한 과제 전략 수립 및 시간 관리 도구. AI를 활용한 과제 분석, 시간표 연동, 교수님 스타일 분석 기능을 제공합니다.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
